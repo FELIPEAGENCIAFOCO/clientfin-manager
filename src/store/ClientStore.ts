@@ -1,4 +1,3 @@
-
 import { create } from 'zustand';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -105,7 +104,7 @@ export const useClientStore = create<ClientState>((set, get) => ({
       const { data, error } = await supabase
         .from('clients')
         .select('*')
-        .eq('user_id', userId) as any;
+        .eq('user_id', userId);
 
       if (error) throw error;
       set({ clients: data || [], isLoading: false });
@@ -122,7 +121,7 @@ export const useClientStore = create<ClientState>((set, get) => ({
         .from('clients')
         .select('*')
         .eq('id', id)
-        .single() as any;
+        .single();
 
       if (error) throw error;
       set({ selectedClient: data || null, isLoading: false });
@@ -138,7 +137,7 @@ export const useClientStore = create<ClientState>((set, get) => ({
       const userId = await getCurrentUserId();
       const { error } = await supabase
         .from('clients')
-        .insert([{ ...client, user_id: userId }]) as any;
+        .insert([{ ...client, user_id: userId }]);
 
       if (error) throw error;
       set({ isLoading: false });
@@ -158,7 +157,7 @@ export const useClientStore = create<ClientState>((set, get) => ({
       const { error } = await supabase
         .from('clients')
         .update(updates)
-        .eq('id', id) as any;
+        .eq('id', id);
 
       if (error) throw error;
       set({ isLoading: false });
@@ -178,7 +177,7 @@ export const useClientStore = create<ClientState>((set, get) => ({
       const { error } = await supabase
         .from('clients')
         .delete()
-        .eq('id', id) as any;
+        .eq('id', id);
 
       if (error) throw error;
       set({ isLoading: false });
@@ -203,7 +202,7 @@ export const useClientStore = create<ClientState>((set, get) => ({
         .from('payments')
         .select('*')
         .eq('client_id', clientId)
-        .eq('user_id', userId) as any;
+        .eq('user_id', userId);
 
       if (error) throw error;
       set({ payments: data || [], isLoading: false });
@@ -227,7 +226,7 @@ export const useClientStore = create<ClientState>((set, get) => ({
           status: payment.status,
           method: payment.method,
           user_id: userId
-        }) as any;
+        });
 
       if (error) throw error;
       
@@ -249,7 +248,7 @@ export const useClientStore = create<ClientState>((set, get) => ({
       const { error } = await supabase
         .from('payments')
         .update(updates)
-        .eq('id', id) as any;
+        .eq('id', id);
 
       if (error) throw error;
       set({ isLoading: false });
@@ -275,14 +274,14 @@ export const useClientStore = create<ClientState>((set, get) => ({
         .from('payments')
         .select('client_id')
         .eq('id', id)
-        .single() as any;
+        .single();
       
       const clientId = payment?.client_id;
       
       const { error } = await supabase
         .from('payments')
         .delete()
-        .eq('id', id) as any;
+        .eq('id', id);
 
       if (error) throw error;
       set({ isLoading: false });
@@ -310,7 +309,7 @@ export const useClientStore = create<ClientState>((set, get) => ({
         .from('financial_transactions')
         .select('*')
         .eq('client_id', clientId)
-        .eq('user_id', userId) as any;
+        .eq('user_id', userId);
 
       if (error) throw error;
       set({ financialTransactions: data || [], isLoading: false });
@@ -326,7 +325,7 @@ export const useClientStore = create<ClientState>((set, get) => ({
       const userId = await getCurrentUserId();
       const { error } = await supabase
         .from('financial_transactions')
-        .insert([{ ...transaction, user_id: userId }]) as any;
+        .insert([{ ...transaction, user_id: userId }]);
 
       if (error) throw error;
       set({ isLoading: false });
@@ -346,7 +345,7 @@ export const useClientStore = create<ClientState>((set, get) => ({
       const { error } = await supabase
         .from('financial_transactions')
         .update(updates)
-        .eq('id', id) as any;
+        .eq('id', id);
 
       if (error) throw error;
       set({ isLoading: false });
@@ -372,14 +371,14 @@ export const useClientStore = create<ClientState>((set, get) => ({
         .from('financial_transactions')
         .select('client_id')
         .eq('id', id)
-        .single() as any;
+        .single();
       
       const clientId = transaction?.client_id;
       
       const { error } = await supabase
         .from('financial_transactions')
         .delete()
-        .eq('id', id) as any;
+        .eq('id', id);
 
       if (error) throw error;
       set({ isLoading: false });
@@ -406,7 +405,7 @@ export const useClientStore = create<ClientState>((set, get) => ({
       const { data, error } = await supabase
         .from('leads')
         .select('*')
-        .eq('user_id', userId) as any;
+        .eq('user_id', userId);
 
       if (error) throw error;
       set({ leads: data || [], isLoading: false });
@@ -422,7 +421,7 @@ export const useClientStore = create<ClientState>((set, get) => ({
       const userId = await getCurrentUserId();
       const { error } = await supabase
         .from('leads')
-        .insert([{ ...lead, user_id: userId }]) as any;
+        .insert([{ ...lead, user_id: userId }]);
 
       if (error) throw error;
       set({ isLoading: false });
@@ -442,7 +441,7 @@ export const useClientStore = create<ClientState>((set, get) => ({
       const { error } = await supabase
         .from('leads')
         .update(updates)
-        .eq('id', id) as any;
+        .eq('id', id);
 
       if (error) throw error;
       set({ isLoading: false });
@@ -462,7 +461,7 @@ export const useClientStore = create<ClientState>((set, get) => ({
       const { error } = await supabase
         .from('leads')
         .delete()
-        .eq('id', id) as any;
+        .eq('id', id);
 
       if (error) throw error;
       set({ isLoading: false });
