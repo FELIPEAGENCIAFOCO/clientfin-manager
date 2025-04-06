@@ -1,6 +1,4 @@
 
-import { supabase } from '@/integrations/supabase/client';
-
 // Define types and interfaces
 export interface Client {
   id: string;
