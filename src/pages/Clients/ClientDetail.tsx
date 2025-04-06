@@ -2,16 +2,22 @@
 import React from "react";
 import { useParams } from "react-router-dom";
 import { useClientStore } from "@/store/ClientStore";
+import { usePaymentStore } from "@/store/PaymentStore";
+import { useFinancialTransactionStore } from "@/store/FinancialTransactionStore";
 
 const ClientDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const { selectedClient, fetchClient } = useClientStore();
+  const { payments, fetchPaymentsForClient } = usePaymentStore();
+  const { financialTransactions, fetchFinancialTransactionsForClient } = useFinancialTransactionStore();
 
   React.useEffect(() => {
     if (id) {
       fetchClient(id);
+      fetchPaymentsForClient(id);
+      fetchFinancialTransactionsForClient(id);
     }
-  }, [id, fetchClient]);
+  }, [id, fetchClient, fetchPaymentsForClient, fetchFinancialTransactionsForClient]);
 
   if (!selectedClient) {
     return <div>Loading...</div>;

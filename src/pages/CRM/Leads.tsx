@@ -1,9 +1,9 @@
 
 import React from "react";
-import { useClientStore } from "@/store/ClientStore";
+import { useLeadStore } from "@/store/LeadStore";
 
 const Leads: React.FC = () => {
-  const { leads, fetchLeads } = useClientStore();
+  const { leads, fetchLeads } = useLeadStore();
 
   React.useEffect(() => {
     fetchLeads();
