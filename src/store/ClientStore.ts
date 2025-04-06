@@ -1,3 +1,4 @@
+
 import { create } from 'zustand';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -205,7 +206,14 @@ export const useClientStore = create<ClientState>((set, get) => ({
         .eq('user_id', userId);
 
       if (error) throw error;
-      set({ payments: data || [], isLoading: false });
+      // Add type assertion to ensure the payment status is of the correct type
+      const typedPayments = (data || []).map(item => ({
+        ...item,
+        status: item.status as 'pending' | 'paid' | 'overdue',
+        method: item.method as 'credit_card' | 'bank_transfer' | 'cash' | 'other'
+      }));
+      
+      set({ payments: typedPayments, isLoading: false });
     } catch (error: any) {
       set({ error: error.message, isLoading: false });
       toast.error(`Erro ao buscar pagamentos: ${error.message}`);
@@ -312,7 +320,14 @@ export const useClientStore = create<ClientState>((set, get) => ({
         .eq('user_id', userId);
 
       if (error) throw error;
-      set({ financialTransactions: data || [], isLoading: false });
+      // Add type assertion to ensure transaction type is correct
+      const typedTransactions = (data || []).map(item => ({
+        ...item,
+        type: item.type as 'income' | 'expense',
+        payment_method: item.payment_method as 'credit_card' | 'bank_transfer' | 'cash' | 'other' | undefined
+      }));
+      
+      set({ financialTransactions: typedTransactions, isLoading: false });
     } catch (error: any) {
       set({ error: error.message, isLoading: false });
       toast.error(`Erro ao buscar transações financeiras: ${error.message}`);
@@ -408,7 +423,13 @@ export const useClientStore = create<ClientState>((set, get) => ({
         .eq('user_id', userId);
 
       if (error) throw error;
-      set({ leads: data || [], isLoading: false });
+      // Add type assertion for lead status
+      const typedLeads = (data || []).map(item => ({
+        ...item,
+        status: item.status as 'new' | 'contacted' | 'qualified' | 'lost' | 'converted'
+      }));
+      
+      set({ leads: typedLeads, isLoading: false });
     } catch (error: any) {
       set({ error: error.message, isLoading: false });
       toast.error(`Erro ao buscar leads: ${error.message}`);
