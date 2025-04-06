@@ -1,7 +1,8 @@
+
 import { create } from 'zustand';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { getCurrentUserId } from '@/integrations/supabase/client';
+import { getCurrentUserId } from '@/integrations/supabase/auth';
 
 // Define types and interfaces
 export interface Client {
@@ -104,7 +105,7 @@ export const useClientStore = create<ClientState>((set, get) => ({
       const { data, error } = await supabase
         .from('clients')
         .select('*')
-        .eq('user_id', userId);
+        .eq('user_id', userId) as any;
 
       if (error) throw error;
       set({ clients: data || [], isLoading: false });
@@ -113,6 +114,7 @@ export const useClientStore = create<ClientState>((set, get) => ({
       toast.error(`Erro ao buscar clientes: ${error.message}`);
     }
   },
+  
   fetchClient: async (id) => {
     set({ isLoading: true, error: null });
     try {
@@ -120,7 +122,7 @@ export const useClientStore = create<ClientState>((set, get) => ({
         .from('clients')
         .select('*')
         .eq('id', id)
-        .single();
+        .single() as any;
 
       if (error) throw error;
       set({ selectedClient: data || null, isLoading: false });
@@ -129,13 +131,14 @@ export const useClientStore = create<ClientState>((set, get) => ({
       toast.error(`Erro ao buscar cliente: ${error.message}`);
     }
   },
+  
   createClient: async (client) => {
     set({ isLoading: true, error: null });
     try {
       const userId = await getCurrentUserId();
       const { error } = await supabase
         .from('clients')
-        .insert([{ ...client, user_id: userId }]);
+        .insert([{ ...client, user_id: userId }]) as any;
 
       if (error) throw error;
       set({ isLoading: false });
@@ -148,13 +151,14 @@ export const useClientStore = create<ClientState>((set, get) => ({
       return false;
     }
   },
+  
   updateClient: async (id, updates) => {
     set({ isLoading: true, error: null });
     try {
       const { error } = await supabase
         .from('clients')
         .update(updates)
-        .eq('id', id);
+        .eq('id', id) as any;
 
       if (error) throw error;
       set({ isLoading: false });
@@ -167,13 +171,14 @@ export const useClientStore = create<ClientState>((set, get) => ({
       return false;
     }
   },
+  
   deleteClient: async (id) => {
     set({ isLoading: true, error: null });
     try {
       const { error } = await supabase
         .from('clients')
         .delete()
-        .eq('id', id);
+        .eq('id', id) as any;
 
       if (error) throw error;
       set({ isLoading: false });
@@ -186,6 +191,7 @@ export const useClientStore = create<ClientState>((set, get) => ({
       return false;
     }
   },
+  
   setSelectedClient: (client) => set({ selectedClient: client }),
 
   // Payment-related methods
@@ -197,7 +203,7 @@ export const useClientStore = create<ClientState>((set, get) => ({
         .from('payments')
         .select('*')
         .eq('client_id', clientId)
-        .eq('user_id', userId);
+        .eq('user_id', userId) as any;
 
       if (error) throw error;
       set({ payments: data || [], isLoading: false });
@@ -221,7 +227,7 @@ export const useClientStore = create<ClientState>((set, get) => ({
           status: payment.status,
           method: payment.method,
           user_id: userId
-        });
+        }) as any;
 
       if (error) throw error;
       
@@ -243,12 +249,16 @@ export const useClientStore = create<ClientState>((set, get) => ({
       const { error } = await supabase
         .from('payments')
         .update(updates)
-        .eq('id', id);
+        .eq('id', id) as any;
 
       if (error) throw error;
       set({ isLoading: false });
       toast.success('Pagamento atualizado com sucesso');
-      await get().fetchPaymentsForClient(updates.client_id as string); // Refresh payments data
+      
+      if (updates.client_id) {
+        await get().fetchPaymentsForClient(updates.client_id as string);
+      }
+      
       return true;
     } catch (error: any) {
       set({ error: error.message, isLoading: false });
@@ -256,22 +266,33 @@ export const useClientStore = create<ClientState>((set, get) => ({
       return false;
     }
   },
+  
   deletePayment: async (id) => {
     set({ isLoading: true, error: null });
     try {
+      // First, get the payment to know its client_id
+      const { data: payment } = await supabase
+        .from('payments')
+        .select('client_id')
+        .eq('id', id)
+        .single() as any;
+      
+      const clientId = payment?.client_id;
+      
       const { error } = await supabase
         .from('payments')
         .delete()
-        .eq('id', id);
+        .eq('id', id) as any;
 
       if (error) throw error;
       set({ isLoading: false });
       toast.success('Pagamento removido com sucesso');
-      // Refresh payments data
-      // Assuming you have access to the client_id associated with the payment
-      // You might need to fetch the payment first to get the client_id
-      // For now, let's assume you have a way to access it.
-      await get().fetchPaymentsForClient("/* client_id */");
+      
+      // Refresh payments data using the clientId we got earlier
+      if (clientId) {
+        await get().fetchPaymentsForClient(clientId);
+      }
+      
       return true;
     } catch (error: any) {
       set({ error: error.message, isLoading: false });
@@ -289,7 +310,7 @@ export const useClientStore = create<ClientState>((set, get) => ({
         .from('financial_transactions')
         .select('*')
         .eq('client_id', clientId)
-        .eq('user_id', userId);
+        .eq('user_id', userId) as any;
 
       if (error) throw error;
       set({ financialTransactions: data || [], isLoading: false });
@@ -298,13 +319,14 @@ export const useClientStore = create<ClientState>((set, get) => ({
       toast.error(`Erro ao buscar transações financeiras: ${error.message}`);
     }
   },
+  
   addFinancialTransaction: async (transaction) => {
     set({ isLoading: true, error: null });
     try {
       const userId = await getCurrentUserId();
       const { error } = await supabase
         .from('financial_transactions')
-        .insert([{ ...transaction, user_id: userId }]);
+        .insert([{ ...transaction, user_id: userId }]) as any;
 
       if (error) throw error;
       set({ isLoading: false });
@@ -317,18 +339,23 @@ export const useClientStore = create<ClientState>((set, get) => ({
       return false;
     }
   },
+  
   updateFinancialTransaction: async (id, updates) => {
     set({ isLoading: true, error: null });
     try {
       const { error } = await supabase
         .from('financial_transactions')
         .update(updates)
-        .eq('id', id);
+        .eq('id', id) as any;
 
       if (error) throw error;
       set({ isLoading: false });
       toast.success('Transação financeira atualizada com sucesso');
-      await get().fetchFinancialTransactionsForClient(updates.client_id as string); // Refresh transactions data
+      
+      if (updates.client_id) {
+        await get().fetchFinancialTransactionsForClient(updates.client_id as string);
+      }
+      
       return true;
     } catch (error: any) {
       set({ error: error.message, isLoading: false });
@@ -336,22 +363,33 @@ export const useClientStore = create<ClientState>((set, get) => ({
       return false;
     }
   },
+  
   deleteFinancialTransaction: async (id) => {
     set({ isLoading: true, error: null });
     try {
+      // First, get the transaction to know its client_id
+      const { data: transaction } = await supabase
+        .from('financial_transactions')
+        .select('client_id')
+        .eq('id', id)
+        .single() as any;
+      
+      const clientId = transaction?.client_id;
+      
       const { error } = await supabase
         .from('financial_transactions')
         .delete()
-        .eq('id', id);
+        .eq('id', id) as any;
 
       if (error) throw error;
       set({ isLoading: false });
       toast.success('Transação financeira removida com sucesso');
-      // Refresh transactions data
-      // Assuming you have access to the client_id associated with the transaction
-      // You might need to fetch the transaction first to get the client_id
-      // For now, let's assume you have a way to access it.
-      await get().fetchFinancialTransactionsForClient("/* client_id */");
+      
+      // Refresh transactions data using the clientId we got earlier
+      if (clientId) {
+        await get().fetchFinancialTransactionsForClient(clientId);
+      }
+      
       return true;
     } catch (error: any) {
       set({ error: error.message, isLoading: false });
@@ -368,7 +406,7 @@ export const useClientStore = create<ClientState>((set, get) => ({
       const { data, error } = await supabase
         .from('leads')
         .select('*')
-        .eq('user_id', userId);
+        .eq('user_id', userId) as any;
 
       if (error) throw error;
       set({ leads: data || [], isLoading: false });
@@ -377,13 +415,14 @@ export const useClientStore = create<ClientState>((set, get) => ({
       toast.error(`Erro ao buscar leads: ${error.message}`);
     }
   },
+  
   addLead: async (lead) => {
     set({ isLoading: true, error: null });
     try {
       const userId = await getCurrentUserId();
       const { error } = await supabase
         .from('leads')
-        .insert([{ ...lead, user_id: userId }]);
+        .insert([{ ...lead, user_id: userId }]) as any;
 
       if (error) throw error;
       set({ isLoading: false });
@@ -396,13 +435,14 @@ export const useClientStore = create<ClientState>((set, get) => ({
       return false;
     }
   },
+  
   updateLead: async (id, updates) => {
     set({ isLoading: true, error: null });
     try {
       const { error } = await supabase
         .from('leads')
         .update(updates)
-        .eq('id', id);
+        .eq('id', id) as any;
 
       if (error) throw error;
       set({ isLoading: false });
@@ -415,13 +455,14 @@ export const useClientStore = create<ClientState>((set, get) => ({
       return false;
     }
   },
+  
   deleteLead: async (id) => {
     set({ isLoading: true, error: null });
     try {
       const { error } = await supabase
         .from('leads')
         .delete()
-        .eq('id', id);
+        .eq('id', id) as any;
 
       if (error) throw error;
       set({ isLoading: false });
